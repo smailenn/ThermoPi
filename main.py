@@ -1,5 +1,8 @@
 import glob
 import time
+import RPi.GPIO as GPIO
+
+GPIO.setmode(GPIO.BCM) # GPIO Numbers instead of board numbers
 
 #Zones
 MBR = "Master Bedroom"
@@ -14,6 +17,11 @@ UF_folder = glob.glob(base_dir + '28-00000dea8b78')[0]
 MBR_file = MBR_folder + '/w1_slave'
 MF_file = MF_folder + '/w1_slave'
 UF_file = UF_folder + '/w1_slave'
+
+#Relay setup
+Relay_MBR = 17
+GPIO.setup(Relay_MBR, GPIO.OUT) # GPIO Assign mode
+
 
 # Specifications
 Temp_high = 71 # Deg F
@@ -34,6 +42,10 @@ def read_temp(sensor):
         temp_c = float(temp_string) / 1000.0
         temp_f = temp_c * 9.0 / 5.0 + 32.0
         return temp_f
+
+def MBR_heat():
+    GPIO.output(Relay_MBR, GPIO.LOW) # out
+    GPIO.output(Relay_MBR, GPIO.HIGH) # on
 
 while True:
     print("Master = ", read_temp(MBR_file), "Main Floor =", read_temp(MF_file), "Upper Floor =", read_temp(UF_file))
