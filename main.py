@@ -12,10 +12,12 @@
 import glob
 import time
 import RPi.GPIO as GPIO
+from ds18b20 import DS18B20
 import os
 import subprocess
 import csv
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 #import /home/pi/ThermoPi/homekit.py
 
 #Homekit setup 
@@ -25,28 +27,20 @@ import matplotlib.pyplot as plt
 #output = p.communicate()
 #print(output[0])
 
-#Plot data live
-plt.ion()
-x = []
-y = []
-
-# Pi board setup
-GPIO.setmode(GPIO.BCM) # GPIO Numbers instead of board numbers
-
-#Sensor Setup
-base_dir = '/sys/bus/w1/devices/'
-MBR_folder = glob.glob(base_dir + '28-00000de8f995')[0]
-MF_folder = glob.glob(base_dir + '28-00000de9525b')[0]
-UF_folder = glob.glob(base_dir + '28-00000dea8b78')[0]
-MBR_file = MBR_folder + '/w1_slave'
-MF_file = MF_folder + '/w1_slave'
-UF_file = UF_folder + '/w1_slave'
-
-#Zones
+#Sensor Setup and zones
+#base_dir = '/sys/bus/w1/devices/'
+#MBR_folder = glob.glob(base_dir + '28-00000de8f995')[0]
+#MF_folder = glob.glob(base_dir + '28-00000de9525b')[0]
+#UF_folder = glob.glob(base_dir + '28-00000dea8b78')[0]
+#MBR_file = MBR_folder + '/w1_slave'
+#MF_file = MF_folder + '/w1_slave'
+#UF_file = UF_folder + '/w1_slave'
+Zone = [DS18B20("00000de8f995"), DS18B20("00000de9525b"), DS18B20("00000dea8b78")]
 Zone_Name = ["Master Bedroom", "Main Floor", "Upper Floor"]
-Zone = [MBR_file, MF_file, UF_file]
+#Zone = [MBR_file, MF_file, UF_file]
 
 # Specifications/ Temps
+Zone_temp = [ 68, 68, 68] #zone temps
 Zone_high = [73, 73, 74]  #MAX temperature of zone
 Zone_low = [68, 69, 70]  #MIN temperature of zone
 Zone_time = [40, 20, 9] #seconds of time have per zone will run
@@ -58,6 +52,56 @@ Zone_available = [1,1,1] #Is this unit available or resting?  0 = no, 1 = yes
 Zone_Wait = 30 # dwell time between run times
 Temp_dwell = 15 #time between measurements 
 
+#Plot data live
+#plt.ion()
+x = []  #time
+y = []  #zone temp 0
+z = []  #zone temp 1
+v = []  #zone temp 2 
+zs0 = []    #zone status 0
+zs1 = []    #zone status 1
+zs2 = []    #zone status 2 
+
+fig = plt.subplots(figsize =(12,6))
+ax1 = plt.subplot(121)
+ax2 = plt.subplot(122)
+
+# Create a blank line. We will update the line in animate
+#line, = ax1.plot(x, y)
+
+# This function is called periodically from FuncAnimation
+# def animate(i):
+
+#     # Limit y list to set number of items
+#     y = y[-30:]
+
+#     ax1.clear()
+#     ax1.plot(x, y, label= Zone_Name[0], color='m')
+#     ax1.plot(x,z, label= Zone_Name[1], color='r')
+#     ax1.plot(x, v, label= Zone_Name[2], color='g')
+#     ax2.plot(x, zs0, label= Zone_Name[0], color='y')
+#     ax2.plot(x,zs1, label= Zone_Name[1], color='k')
+#     ax2.plot(x, zs2, label= Zone_Name[2], color='c')
+#     ax1.set_title('Temps')
+#     ax1.set_xlabel('Time') 
+#     ax1.set_ylabel('Temperature (F)')
+#     ax1.legend()
+#     ax1.grid()
+#     ax2.set_title('Run Time')
+#     ax2.set_xlabel('Time')
+#     ax2.set_ylabel('Zone Status')
+#     ax2.set_ylim(-1,2)
+#     ax2.legend()
+#     ax2.grid()  
+
+
+# Set up plot to call animate() function periodically
+#ani = animation.FuncAnimation(fig, animate, fargs=(y,), interval=50, blit=True)
+#plt.show()
+
+# Pi board setup
+GPIO.setmode(GPIO.BCM) # GPIO Numbers instead of board numbers
+
 #Relay setup
 Relay = [25, 12, 20]
 GPIO.setup(Relay[0], GPIO.OUT) # GPIO Assign mode
@@ -68,32 +112,35 @@ GPIO.output(Relay[1], GPIO.LOW) # out
 GPIO.output(Relay[2], GPIO.LOW) # out
 
 
-
 # Function for reading DS18B20 Sensors, get values
-def read_temp(sensor):
-    while True: 
-        f = open(sensor, 'r')
-        lines = f.readlines()
+#def read_temp(sensor):
+    #while True:
+        #f = open(sensor, 'r')
+        #lines = f.readlines()
         #print(lines)
-        f.close()
-        try:
-            t_value = lines[1].find('t=')
-        except:
-            read_temp(sensor)
-        temp_string = lines[1][t_value+2:]
+        #f.close()
+        #if len(lines) > 1:
+        #    t_value = lines[1].find('t=')
+        #else:
+        #    time.sleep(1)
+        #    read_temp(sensor)
+        #print("t value failed trying again")
+        #temp_string = lines[1][t_value+2:]
+        #read_temp(sensor)
+        #print("temp_string failed trying again")
         #print(temp_string)
-        temp_c = float(temp_string) / 1000.0
-        temp_f = temp_c * 9.0 / 5.0 + 32.0
+        #temp_c = float(temp_string) / 1000.0
+        #temp_f = temp_c * 9.0 / 5.0 + 32.0
         #temp_f = 55
         #print(temp_f)
-        round(temp_f, 3)
-        return temp_f
-        break
+        #round(temp_f, 3)
+        #return temp_f
+        #break
 
 # Function for turning on or off heat
 def hvac(sensor,i):
     # Turn on heating if conditions are met
-    if read_temp(sensor) <= Zone_low[i] and Zone_Status[i] == 0 and Zone_Switch[i] == 1 and (time.monotonic() - Zone_Off_Time[i]) >= Zone_Wait:
+    if Zone_temp[i] <= Zone_low[i] and Zone_Status[i] == 0 and Zone_Switch[i] == 1 and (time.monotonic() - Zone_Off_Time[i]) >= Zone_Wait:
         GPIO.output(Relay[i], GPIO.HIGH)
         Zone_Status[i] = 1
         Zone_On_Time[i] = time.monotonic()
@@ -101,7 +148,7 @@ def hvac(sensor,i):
         #print (time.ctime())
 
     # Turn off heating if temperature range has been achieved 
-    if read_temp(sensor) >= Zone_high[i] and Zone_Status[i] == 1:
+    if Zone_temp[i] >= Zone_high[i] and Zone_Status[i] == 1:
         GPIO.output(Relay[i], GPIO.LOW)
         Zone_Status[i] = 0
         Zone_Off_Time[i] = time.monotonic()
@@ -131,29 +178,45 @@ with open("/home/pi/ThermoPi/ThermoPi2022.csv","w") as log:
     while True:
         # Read temps from sensors and turn on heat if needed and wanted 
         for i in range(3):
-            read_temp(Zone[i])
+            #read_temp(Zone[i])
+            try:
+                Zone_temp[i] = Zone[i].get_temperature(DS18B20.DEGREES_F)
+                pass
+            except ValueError:
+                print("Bad Value, try again . . . ")
             hvac(Zone[i],i)
 
         #Serial print for debug
         print(time.ctime())
         for i in range(3):
-            print(Zone_Name[i],":", read_temp(Zone[i]),"F   Zone Status:", Zone_Status[i])
+            print(Zone_Name[i],":", Zone_temp[i],"F   Zone Status:", Zone_Status[i])
         print()
 
-        #Mat plot for live viewing
-        y.append(read_temp(Zone[0]))
-        x.append(time.time())
-        plt.clf()
-        plt.scatter(x,y)
-        plt.plot(x,y)
-        plt.pause(1)
-        plt.draw()
+        #Matplot for live viewing
+        #clear previous plot
+        
+        y.append(Zone_temp[0])
+        z.append(Zone_temp[1])
+        v.append(Zone_temp[2])
+        x.append(time.ctime())
+        zs0.append(Zone_Status[0])
+        zs1.append(Zone_Status[1])
+        zs2.append(Zone_Status[2])
+
+ 
+
+
+        # plt.pause(0.05)
+        # plt.draw()
+
+
 
         #Saving data to file or database
-        data = [time.ctime(),Zone_Name[0],read_temp(Zone[0]),Zone_Status[0],Zone_Name[1],read_temp(Zone[1]),Zone_Status[1],Zone_Name[2],read_temp(Zone[2]),Zone_Status[2]]
+        data = [time.ctime(),Zone_Name[0],Zone_temp[0],Zone_Status[0],Zone_Name[1],Zone_temp[1],Zone_Status[1],Zone_Name[2],Zone_temp[2],Zone_Status[2]]
         writer.writerow(data)
         log.flush()
 
+        #Dwell between measurements
         time.sleep(Temp_dwell)
 
 
