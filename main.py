@@ -17,7 +17,7 @@ import os
 import subprocess
 import csv
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+import matplotlib.animation as FuncAnimation
 #import /home/pi/ThermoPi/homekit.py
 
 #Homekit setup 
@@ -182,8 +182,9 @@ with open("/home/pi/ThermoPi/ThermoPi2022.csv","w") as log:
             try:
                 Zone_temp[i] = Zone[i].get_temperature(DS18B20.DEGREES_F)
                 pass
-            except ValueError:
+            except IndexError:
                 print("Bad Value, try again . . . ")
+                time.sleep(5)
             hvac(Zone[i],i)
 
         #Serial print for debug
