@@ -17,15 +17,17 @@ import os
 import subprocess
 import csv
 import matplotlib.pyplot as plt
-import matplotlib.animation as FuncAnimation
-#import /home/pi/ThermoPi/homekit.py
+import matplotlib.animation as animation
+#from itertools import count
+
+#import homekit
 
 #Homekit setup 
-#from subprocess import*
-#subprocess.call("/home/pi/ThermoPi/homekit", shell=True)
-#p = open([r'/home/pi/ThermoPi/homekit.py', "ArcView"])
-#output = p.communicate()
-#print(output[0])
+from subprocess import*
+subprocess.call("/home/pi/ThermoPi/homekit", shell=True)
+p = open([r'/home/pi/ThermoPi/homekit.py', "ArcView"])
+output = p.communicate()
+print(output[0])
 
 #Sensor Setup and zones
 #base_dir = '/sys/bus/w1/devices/'
@@ -62,9 +64,17 @@ zs0 = []    #zone status 0
 zs1 = []    #zone status 1
 zs2 = []    #zone status 2 
 
-fig = plt.subplots(figsize =(12,6))
-ax1 = plt.subplot(121)
-ax2 = plt.subplot(122)
+# fig = plt.subplots(figsize =(12,6))
+# ax1 = plt.subplot(121)
+# ax2 = plt.subplot(122)
+
+fig, ax = plt.subplots()
+
+
+
+
+
+#index = count()
 
 # Create a blank line. We will update the line in animate
 #line, = ax1.plot(x, y)
@@ -94,10 +104,23 @@ ax2 = plt.subplot(122)
 #     ax2.legend()
 #     ax2.grid()  
 
-
+#plt.style.use('fivethirtyeight')
 # Set up plot to call animate() function periodically
 #ani = animation.FuncAnimation(fig, animate, fargs=(y,), interval=50, blit=True)
 #plt.show()
+# def animate(i):
+    #data = pd.read_csv('ThermoPi2022.csv')
+    #x_values = data['Time']
+    #y_values = data['Price']
+    # plt.cla()
+    # plt.plot(x, y)
+    # plt.xlabel('Time')
+    # plt.ylabel('Price')
+    # plt.title('Infosys')
+    # plt.gcf().autofmt_xdate()
+    # plt.tight_layout()
+
+# ani = FuncAnimation(plt.gcf(), animate, 5000)
 
 # Pi board setup
 GPIO.setmode(GPIO.BCM) # GPIO Numbers instead of board numbers
@@ -204,11 +227,20 @@ with open("/home/pi/ThermoPi/ThermoPi2022.csv","w") as log:
         zs1.append(Zone_Status[1])
         zs2.append(Zone_Status[2])
 
- 
+        
+        line, = ax.plot(x, y)
+            
+        def animate(i):
+            line.set_ydata(y)
+            return line,
+        #plt.tight_layout()
+        #plt.show()
+        ani = animation.FuncAnimation(
+            fig, animate, interval = 20, blit=True, save_count=50)
 
-
-        # plt.pause(0.05)
-        # plt.draw()
+        plt.pause(0.05)
+        #plt.draw()
+        plt.show()
 
 
 
