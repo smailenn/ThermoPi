@@ -23,11 +23,11 @@ import matplotlib.animation as animation
 #import homekit
 
 #Homekit setup 
-from subprocess import*
-subprocess.call("/home/pi/ThermoPi/homekit", shell=True)
-p = open([r'/home/pi/ThermoPi/homekit.py', "ArcView"])
-output = p.communicate()
-print(output[0])
+# from subprocess import*
+# subprocess.call("/home/pi/ThermoPi/homekit", shell=True)
+# p = open([r'/home/pi/ThermoPi/homekit.py', "ArcView"])
+# output = p.communicate()
+# print(output[0])
 
 #Sensor Setup and zones
 #base_dir = '/sys/bus/w1/devices/'
@@ -70,39 +70,43 @@ zs2 = []    #zone status 2
 
 fig, ax = plt.subplots()
 
-
-
-
-
-#index = count()
-
-# Create a blank line. We will update the line in animate
-#line, = ax1.plot(x, y)
-
 # This function is called periodically from FuncAnimation
-# def animate(i):
+def animate(y):
 
-#     # Limit y list to set number of items
-#     y = y[-30:]
 
-#     ax1.clear()
-#     ax1.plot(x, y, label= Zone_Name[0], color='m')
-#     ax1.plot(x,z, label= Zone_Name[1], color='r')
-#     ax1.plot(x, v, label= Zone_Name[2], color='g')
-#     ax2.plot(x, zs0, label= Zone_Name[0], color='y')
-#     ax2.plot(x,zs1, label= Zone_Name[1], color='k')
-#     ax2.plot(x, zs2, label= Zone_Name[2], color='c')
-#     ax1.set_title('Temps')
-#     ax1.set_xlabel('Time') 
-#     ax1.set_ylabel('Temperature (F)')
-#     ax1.legend()
-#     ax1.grid()
-#     ax2.set_title('Run Time')
-#     ax2.set_xlabel('Time')
-#     ax2.set_ylabel('Zone Status')
-#     ax2.set_ylim(-1,2)
-#     ax2.legend()
-#     ax2.grid()  
+
+    # Limit y list to set number of items
+    #y = y[-30:]
+
+    ax.clear()
+    ax.plot(x, y, label= Zone_Name[0], color='m')
+    #ax.plot(x,z, label= Zone_Name[1], color='r')
+    #ax.plot(x, v, label= Zone_Name[2], color='g')
+    # ax2.plot(x, zs0, label= Zone_Name[0], color='y')
+    # ax2.plot(x,zs1, label= Zone_Name[1], color='k')
+    # ax2.plot(x, zs2, label= Zone_Name[2], color='c')
+    ax.set_title('Temps')
+    ax.set_xlabel('Time') 
+    ax.set_ylabel('Temperature (F)')
+    ax.legend()
+    ax.grid()
+    # ax2.set_title('Run Time')
+    # ax2.set_xlabel('Time')
+    # ax2.set_ylabel('Zone Status')
+    # ax2.set_ylim(-1,2)
+    # ax2.legend()
+    # ax2.grid()  
+    ax.set_xlim([0,20])
+    ax.set_ylim([0,10])
+    plt.tight_layout()
+
+ani = animation.FuncAnimation(fig, animate, frames=20, interval=500,repeat=False)
+        #ani = animation.FuncAnimation(fig, animate)
+        #plt.pause(0.05)
+        #plt.draw()
+#plt.show()
+
+#ani = animation.FuncAnimation(fig, animate, frames=20, interval=500,repeat=False)
 
 #plt.style.use('fivethirtyeight')
 # Set up plot to call animate() function periodically
@@ -216,9 +220,6 @@ with open("/home/pi/ThermoPi/ThermoPi2022.csv","w") as log:
             print(Zone_Name[i],":", Zone_temp[i],"F   Zone Status:", Zone_Status[i])
         print()
 
-        #Matplot for live viewing
-        #clear previous plot
-        
         y.append(Zone_temp[0])
         z.append(Zone_temp[1])
         v.append(Zone_temp[2])
@@ -227,27 +228,31 @@ with open("/home/pi/ThermoPi/ThermoPi2022.csv","w") as log:
         zs1.append(Zone_Status[1])
         zs2.append(Zone_Status[2])
 
-        
-        line, = ax.plot(x, y)
-            
-        def animate(i):
-            line.set_ydata(y)
-            return line,
-        #plt.tight_layout()
-        #plt.show()
-        ani = animation.FuncAnimation(
-            fig, animate, interval = 20, blit=True, save_count=50)
-
-        plt.pause(0.05)
-        #plt.draw()
-        plt.show()
-
-
 
         #Saving data to file or database
         data = [time.ctime(),Zone_Name[0],Zone_temp[0],Zone_Status[0],Zone_Name[1],Zone_temp[1],Zone_Status[1],Zone_Name[2],Zone_temp[2],Zone_Status[2]]
         writer.writerow(data)
         log.flush()
+
+
+        #Matplot for live viewing
+        #clear previous plot
+        
+
+
+        
+        # line, = ax.plot(x, y)
+            
+        # def animate(i):
+        #     line.set_ydata(y)
+        #     return line,
+        #plt.tight_layout()
+        #plt.show()
+        #ani = animation.FuncAnimation(fig, animate, frames=20, interval=500,repeat=False)
+        #ani = animation.FuncAnimation(fig, animate)
+        #plt.pause(0.05)
+        #plt.draw()
+        #plt.show()
 
         #Dwell between measurements
         time.sleep(Temp_dwell)
