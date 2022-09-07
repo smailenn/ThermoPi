@@ -1,2 +1,0 @@
-# ThermoPi
-Raspberry Pi Thermostat
