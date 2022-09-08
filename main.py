@@ -1,5 +1,5 @@
 # ThermoPi OS for hydronic heating
-# Version: 1.0
+# Version: 1.3
 # Updated:
 # Uses Raspberry Pi, DS18B20 one wire sensors, hydronic heating, 3 zones currently
 # Items needed:
@@ -30,16 +30,8 @@ import matplotlib.animation as animation
 # print(output[0])
 
 #Sensor Setup and zones
-#base_dir = '/sys/bus/w1/devices/'
-#MBR_folder = glob.glob(base_dir + '28-00000de8f995')[0]
-#MF_folder = glob.glob(base_dir + '28-00000de9525b')[0]
-#UF_folder = glob.glob(base_dir + '28-00000dea8b78')[0]
-#MBR_file = MBR_folder + '/w1_slave'
-#MF_file = MF_folder + '/w1_slave'
-#UF_file = UF_folder + '/w1_slave'
 Zone = [DS18B20("00000de8f995"), DS18B20("00000de9525b"), DS18B20("00000dea8b78")]
 Zone_Name = ["Master Bedroom", "Main Floor", "Upper Floor"]
-#Zone = [MBR_file, MF_file, UF_file]
 
 # Specifications/ Temps
 Zone_temp = [ 68, 68, 68] #zone temps
@@ -64,81 +56,9 @@ zs0 = []    #zone status 0
 zs1 = []    #zone status 1
 zs2 = []    #zone status 2 
 
-# fig = plt.subplots(figsize =(12,6))
-# ax1 = plt.subplot(121)
-# ax2 = plt.subplot(122)
-
-fig, ax = plt.subplots()
-axis = plt.axes(xlim = (-50, 50), ylim = (-50, 50))
-
-line, = axis.plot([], [], lw=2)
-
-def init():
-    line.set_data([], [])
-    return line,
-
-x, y = [], []
-
-# This function is called periodically from FuncAnimation
-def animate(i):
-
-
-
-    # Limit y list to set number of items
-    #y = y[-30:]
-
-    ax.clear()
-    #ax.plot(x, y, label= Zone_Name[0], color='m')
-    #ax.plot(x,z, label= Zone_Name[1], color='r')
-    #ax.plot(x, v, label= Zone_Name[2], color='g')
-    # ax2.plot(x, zs0, label= Zone_Name[0], color='y')
-    # ax2.plot(x,zs1, label= Zone_Name[1], color='k')
-    # ax2.plot(x, zs2, label= Zone_Name[2], color='c')
-    ax.set_title('Temps')
-    ax.set_xlabel('Time') 
-    ax.set_ylabel('Temperature (F)')
-    ax.legend()
-    ax.grid()
-    # ax2.set_title('Run Time')
-    # ax2.set_xlabel('Time')
-    # ax2.set_ylabel('Zone Status')
-    # ax2.set_ylim(-1,2)
-    # ax2.legend()
-    # ax2.grid()  
-    ax.set_xlim([0,20])
-    ax.set_ylim([0,10])
-    plt.tight_layout()
-    i =+1
-
-    line.set_data(x, y)
-
-    return line,
-
-ani = animation.FuncAnimation(fig, animate, frames=20, interval=500,repeat=False)
-        #ani = animation.FuncAnimation(fig, animate)
-        #plt.pause(0.05)
-        #plt.draw()
-plt.show()
-
-#ani = animation.FuncAnimation(fig, animate, frames=20, interval=500,repeat=False)
-
-#plt.style.use('fivethirtyeight')
-# Set up plot to call animate() function periodically
-#ani = animation.FuncAnimation(fig, animate, fargs=(y,), interval=50, blit=True)
-#plt.show()
-# def animate(i):
-    #data = pd.read_csv('ThermoPi2022.csv')
-    #x_values = data['Time']
-    #y_values = data['Price']
-    # plt.cla()
-    # plt.plot(x, y)
-    # plt.xlabel('Time')
-    # plt.ylabel('Price')
-    # plt.title('Infosys')
-    # plt.gcf().autofmt_xdate()
-    # plt.tight_layout()
-
-# ani = FuncAnimation(plt.gcf(), animate, 5000)
+fig = plt.subplots(figsize =(12,6))
+ax1 = plt.subplot(121)
+ax2 = plt.subplot(122)
 
 # Pi board setup
 GPIO.setmode(GPIO.BCM) # GPIO Numbers instead of board numbers
@@ -151,32 +71,6 @@ GPIO.setup(Relay[2], GPIO.OUT) # GPIO Assign mode
 GPIO.output(Relay[0], GPIO.LOW) # out
 GPIO.output(Relay[1], GPIO.LOW) # out
 GPIO.output(Relay[2], GPIO.LOW) # out
-
-
-# Function for reading DS18B20 Sensors, get values
-#def read_temp(sensor):
-    #while True:
-        #f = open(sensor, 'r')
-        #lines = f.readlines()
-        #print(lines)
-        #f.close()
-        #if len(lines) > 1:
-        #    t_value = lines[1].find('t=')
-        #else:
-        #    time.sleep(1)
-        #    read_temp(sensor)
-        #print("t value failed trying again")
-        #temp_string = lines[1][t_value+2:]
-        #read_temp(sensor)
-        #print("temp_string failed trying again")
-        #print(temp_string)
-        #temp_c = float(temp_string) / 1000.0
-        #temp_f = temp_c * 9.0 / 5.0 + 32.0
-        #temp_f = 55
-        #print(temp_f)
-        #round(temp_f, 3)
-        #return temp_f
-        #break
 
 # Function for turning on or off heat
 def hvac(sensor,i):
@@ -242,32 +136,39 @@ with open("/home/pi/ThermoPi/ThermoPi2022.csv","w") as log:
         zs1.append(Zone_Status[1])
         zs2.append(Zone_Status[2])
 
-
         #Saving data to file or database
         data = [time.ctime(),Zone_Name[0],Zone_temp[0],Zone_Status[0],Zone_Name[1],Zone_temp[1],Zone_Status[1],Zone_Name[2],Zone_temp[2],Zone_Status[2]]
         writer.writerow(data)
         log.flush()
 
-
         #Matplot for live viewing
         #clear previous plot
+        ax1.clear()
+        ax2.clear()
+        ax1.plot(x, y, label= Zone_Name[0], color='m')
+        ax1.plot(x,z, label= Zone_Name[1], color='r')
+        ax1.plot(x, v, label= Zone_Name[2], color='g')
+        ax2.plot(x, zs0, label= Zone_Name[0], color='y')
+        ax2.plot(x,zs1, label= Zone_Name[1], color='k')
+        ax2.plot(x, zs2, label= Zone_Name[2], color='c')
+        ax1.set_title('Temps')
+        ax1.set_xlabel('Time') 
+        ax1.set_ylabel('Temperature (F)')
+        ax1.legend()
+        ax1.grid()
+        ax2.set_title('Run Time')
+        ax2.set_xlabel('Time')
+        ax2.set_ylabel('Zone Status')
+        ax2.legend()
+        ax2.grid()  
+        ax1.set_xlim([0,20])
+        #ax1.set_ylim([0,10])
+        ax2.set_xlim([0,20])
+        ax2.set_ylim(-1,2)
+        plt.tight_layout()
+        plt.pause(0.05)
+        plt.draw()
         
-
-
-        
-        # line, = ax.plot(x, y)
-            
-        # def animate(i):
-        #     line.set_ydata(y)
-        #     return line,
-        #plt.tight_layout()
-        #plt.show()
-        #ani = animation.FuncAnimation(fig, animate, frames=20, interval=500,repeat=False)
-        #ani = animation.FuncAnimation(fig, animate)
-        #plt.pause(0.05)
-        #plt.draw()
-        #plt.show()
-
         #Dwell between measurements
         time.sleep(Temp_dwell)
 
