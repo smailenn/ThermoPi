@@ -69,9 +69,18 @@ zs2 = []    #zone status 2
 # ax2 = plt.subplot(122)
 
 fig, ax = plt.subplots()
+axis = plt.axes(xlim = (-50, 50), ylim = (-50, 50))
+
+line, = axis.plot([], [], lw=2)
+
+def init():
+    line.set_data([], [])
+    return line,
+
+x, y = [], []
 
 # This function is called periodically from FuncAnimation
-def animate(y):
+def animate(i):
 
 
 
@@ -79,7 +88,7 @@ def animate(y):
     #y = y[-30:]
 
     ax.clear()
-    ax.plot(x, y, label= Zone_Name[0], color='m')
+    #ax.plot(x, y, label= Zone_Name[0], color='m')
     #ax.plot(x,z, label= Zone_Name[1], color='r')
     #ax.plot(x, v, label= Zone_Name[2], color='g')
     # ax2.plot(x, zs0, label= Zone_Name[0], color='y')
@@ -99,12 +108,17 @@ def animate(y):
     ax.set_xlim([0,20])
     ax.set_ylim([0,10])
     plt.tight_layout()
+    i =+1
+
+    line.set_data(x, y)
+
+    return line,
 
 ani = animation.FuncAnimation(fig, animate, frames=20, interval=500,repeat=False)
         #ani = animation.FuncAnimation(fig, animate)
         #plt.pause(0.05)
         #plt.draw()
-#plt.show()
+plt.show()
 
 #ani = animation.FuncAnimation(fig, animate, frames=20, interval=500,repeat=False)
 
