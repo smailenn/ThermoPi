@@ -18,9 +18,7 @@ import subprocess
 import csv
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-#from itertools import count
-
-#import homekit
+import homekit
 
 #Homekit setup 
 # from subprocess import*
@@ -145,16 +143,16 @@ with open("/home/pi/ThermoPi/ThermoPi2022.csv","w") as log:
         #clear previous plot
         ax1.clear()
         ax2.clear()
-        ax1.plot(x[-15:], y[-15:], label= Zone_Name[0], color='m')
-        ax1.plot(x[-15:], z[-15:], label= Zone_Name[1], color='r')
-        ax1.plot(x[-15:], v[-15:], label= Zone_Name[2], color='g')
+        ax1.plot(x[-20:], y[-20:], label= Zone_Name[0], color='m')
+        ax1.plot(x[-20:], z[-20:], label= Zone_Name[1], color='r')
+        ax1.plot(x[-20:], v[-20:], label= Zone_Name[2], color='g')
         #ax2.eventplot(zs0, label= Zone_Name[0], color='y', data= x, orientation='horizontal', linewidth=0.75)
         #ax2.eventplot(zs1, label= Zone_Name[1], color='k', data= x, orientation='horizontal', linewidth=0.75)
         #ax2.eventplot(zs2, label= Zone_Name[2], color='c', data= x, orientation='horizontal', linewidth=0.75)
         #ax2.hlines(zs0, x)
-        ax2.plot(x[-15:], zs0[-15:], label= Zone_Name[0], color='y')
-        ax2.plot(x[-15:],zs1[-15:], label= Zone_Name[1], color='k')
-        ax2.plot(x[-15:], zs2[-15:], label= Zone_Name[2], color='c')
+        ax2.plot(x[-20:], zs0[-20:], label= Zone_Name[0], color='y')
+        ax2.plot(x[-20:],zs1[-20:], label= Zone_Name[1], color='k')
+        ax2.plot(x[-20:], zs2[-20:], label= Zone_Name[2], color='c')
         ax1.set_title('Temps')
         ax1.set_xlabel('Time') 
         ax1.set_ylabel('Temperature (F)')
