@@ -60,6 +60,7 @@ ax2 = plt.subplot(122)
 
 # Pi board setup
 GPIO.setmode(GPIO.BCM) # GPIO Numbers instead of board numbers
+GPIO.setwarnings(False)
 
 #Relay setup
 Relay = [25, 12, 20]
@@ -69,6 +70,10 @@ GPIO.setup(Relay[2], GPIO.OUT) # GPIO Assign mode
 GPIO.output(Relay[0], GPIO.LOW) # out
 GPIO.output(Relay[1], GPIO.LOW) # out
 GPIO.output(Relay[2], GPIO.LOW) # out
+
+
+#Button Setup
+GPIO.setup(19, GPIO.IN)
 
 # Function for turning on or off heat
 def hvac(sensor,i):
@@ -101,13 +106,20 @@ def hvac(sensor,i):
     if (time.monotonic() - Zone_Off_Time[i]) >= Zone_Wait:
         Zone_available[i] = 1
 
-####################### The Loop  ################################
 # Create CSV to log ThermoPi Data
 header = ['Time',"Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status"]
-with open("/home/pi/ThermoPi/ThermoPi2022.csv","w") as log:
+file = "ThermoPi"
+month = time.ctime()
+#print(month[4:7])
+with open(str(file) + str(month[4:7]) + ".csv", "w") as log: 
     writer = csv.writer(log)
     writer.writerow(header)
 
+# with open("/home/pi/ThermoPi/ThermoPi2022.csv","w") as log:
+#     writer = csv.writer(log)
+#     writer.writerow(header)
+
+####################### The Loop  ################################
     while True:
         # Read temps from sensors and turn on heat if needed and wanted 
         for i in range(3):
@@ -156,13 +168,13 @@ with open("/home/pi/ThermoPi/ThermoPi2022.csv","w") as log:
         ax1.set_title('Temps')
         ax1.set_xlabel('Time') 
         ax1.set_ylabel('Temperature (F)')
-        ax1.tick_params('x',labelrotation=90)
+        ax1.tick_params('x',labelrotation=90, labelsize=8)
         ax1.legend()
         ax1.grid()
         ax2.set_title('Run Time')
         ax2.set_xlabel('Time')
         ax2.set_ylabel('Zone Status')
-        ax2.tick_params('x',labelrotation=90)
+        ax2.tick_params('x',labelrotation=90, labelsize=8)
         ax2.legend()
         ax2.grid()  
         ax1.set_xlim([0,20])
@@ -173,7 +185,17 @@ with open("/home/pi/ThermoPi/ThermoPi2022.csv","w") as log:
         plt.tight_layout()
         plt.pause(0.05)
         plt.draw()
-        
+
+        #Button Press for forced abort/Restart
+        if GPIO.input(19) == GPIO.LOW:
+            print("Button was pushed!")
+            time.sleep(.4)
+            print("restarting Pi")
+            command = "/usr/bin/sudo /sbin/shutdown -r now"
+            process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+            output = process.communicate()[0]
+            print(output)
+
         #Dwell between measurements
         time.sleep(Temp_dwell)
 

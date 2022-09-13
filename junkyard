@@ -1,32 +1,14 @@
-# python_live_plot.py
+import RPi.GPIO as GPIO
+import time
 
-import random
-from itertools import count
-import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+# Pi board setup
+GPIO.setmode(GPIO.BCM) # GPIO Numbers instead of board numbers
 
-plt.style.use('fivethirtyeight')
+#Button Setup
+GPIO.setup(19, GPIO.IN) #, pull_up_down=GPIO.PUD_DOWN)
 
-x_values = []
-y_values = []
-
-index = count()
-
-
-def animate(i):
-    data = pd.read_csv('ThermoPi2022.csv')
-    x_values = data['Time']
-    y_values = data['Price']
-    plt.cla()
-    plt.plot(x_values, y_values)
-    plt.xlabel('Time')
-    plt.ylabel('Price')
-    plt.title('Infosys')
-    plt.gcf().autofmt_xdate()
-    plt.tight_layout()
-
-ani = FuncAnimation(plt.gcf(), animate, 5000)
-
-plt.tight_layout()
-plt.show()
+while True:
+#Button Press for forced abort/Restart
+    if GPIO.input(19) == GPIO.LOW:
+        print("Button was pushed!")
+        time.sleep(.4)
