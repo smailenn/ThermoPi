@@ -19,13 +19,53 @@ import csv
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import homekit
+from pyhap.accessory import Accessory, Bridge
+from pyhap.accessory_driver import AccessoryDriver
+import pyhap.loader as loader
+from pyhap.const import CATEGORY_SENSOR
+import logging
+import signal 
 
-#Homekit setup 
+# logging.basicConfig(level=logging.INFO, format='[%(module)s] %(message)s')
+# Zone_temp = [0,0,0]
+
+# #Homekit setup 
+# #Create an Accessory
+# class TemperatureSensor(Accessory):
+#     category = CATEGORY_SENSOR
+
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+
+#         serv_temp = self.add_preload_service('TemperatureSensor')
+#         self.char_temp = serv_temp.configure_char('CurrentTemperature')
+
+#     @Accessory.run_at_interval(3)
+#     async def run(self):
+#         self.char_temp.set_value(Zone_temp[0])    
+
+# def get_bridge(driver):
+#     bridge = Bridge(driver, 'Bridge')
+#     bridge.add_accessory(TemperatureSensor(driver, 'Sensor'))
+#     return bridge
+
+# def get_accessory(driver):
+#     """Call this method to get a standalone Accessory."""
+#     return TemperatureSensor(driver, 'MyTempSensor')
+
+# driver = AccessoryDriver(port=51826, persist_file='busy_home.state')
+# #driver.add_accessory(accessory=get_bridge(driver))
+# driver.add_accessory(accessory=TemperatureSensor(driver, 'Sensor'))
+# signal.signal(signal.SIGTERM, driver.signal_handler)
+# #driver.start()
+
+
 # from subprocess import*
 # subprocess.call("/home/pi/ThermoPi/homekit", shell=True)
-# p = open([r'/home/pi/ThermoPi/homekit.py', "ArcView"])
+# p = with open([r"/home/pi/ThermoPi/homekit.py", "ArcView"])
 # output = p.communicate()
 # print(output[0])
+#from homekit 
 
 #Sensor Setup and zones
 Zone = [DS18B20("00000de8f995"), DS18B20("00000de9525b"), DS18B20("00000dea8b78")]
@@ -35,14 +75,14 @@ Zone_Name = ["Master Bedroom", "Main Floor", "Upper Floor"]
 Zone_temp = [ 68, 68, 68] #zone temps
 Zone_high = [73, 73, 74]  #MAX temperature of zone
 Zone_low = [68, 69, 70]  #MIN temperature of zone
-Zone_time = [40, 20, 9] #seconds of time have per zone will run
+Zone_time = [300, 300, 300] #seconds of time zone will run
 Zone_Status = [0, 0, 0] #Status of heating, 0 = not on, 1 = already on
 Zone_On_Time = [0,0,0]  # What time did the zone turn on?
 Zone_Off_Time = [0,0,0] # What time did the zone turn off?
 Zone_Switch = [1, 1, 1] # Is this unit turned on or off? 0 = off, 1 = on
 Zone_available = [1,1,1] #Is this unit available or resting?  0 = no, 1 = yes
-Zone_Wait = 30 # dwell time between run times
-Temp_dwell = 15 #time between measurements 
+Zone_Wait = 60 # dwell time between run time
+Temp_dwell = 60 #time between measurements 
 
 #Plot data live
 #plt.ion()
@@ -85,8 +125,8 @@ def hvac(sensor,i):
         print("Heat Turned on for", Zone_Name[i],"at",Zone_On_Time[i])
         #print (time.ctime())
 
-    # Turn off heating if temperature range has been achieved 
-    if Zone_temp[i] >= Zone_high[i] and Zone_Status[i] == 1:
+    # Turn off heating if temperature range has been achieved
+    if Zone_temp[i] >= Zone_high[i] and Zone_Status[i] == 1: 
         GPIO.output(Relay[i], GPIO.LOW)
         Zone_Status[i] = 0
         Zone_Off_Time[i] = time.monotonic()
@@ -106,14 +146,17 @@ def hvac(sensor,i):
     if (time.monotonic() - Zone_Off_Time[i]) >= Zone_Wait:
         Zone_available[i] = 1
 
-# Create CSV to log ThermoPi Data
-header = ['Time',"Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status"]
-file = "ThermoPi"
-month = time.ctime()
-#print(month[4:7])
-with open(str(file) + str(month[4:7]) + ".csv", "w") as log: 
-    writer = csv.writer(log)
-    writer.writerow(header)
+# Function for creating the CSV file 
+#def CreateCSV():
+    # Create CSV to log ThermoPi Data
+    header = ['Time',"Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status"]
+    file = "ThermoPi"
+    csvtime = time.ctime()
+    csvmonth = str(csvtime[-4:])
+    #print(month[4:7])
+    with open(str(file) + str(csvtime[4:7]) + str(csvtime[-4:]) + ".csv", "w") as log: 
+        writer = csv.writer(log)
+        writer.writerow(header)
 
 # with open("/home/pi/ThermoPi/ThermoPi2022.csv","w") as log:
 #     writer = csv.writer(log)
@@ -196,6 +239,11 @@ with open(str(file) + str(month[4:7]) + ".csv", "w") as log:
             output = process.communicate()[0]
             print(output)
 
+        #Create new CSV file if month change
+        #time_str = time.ctime()
+        #if csvmonth != time_str[-4:]:
+            #CreateCSV()
+        
         #Dwell between measurements
         time.sleep(Temp_dwell)
 
