@@ -82,7 +82,7 @@ Zone_Off_Time = [0,0,0] # What time did the zone turn off?
 Zone_Switch = [1, 1, 1] # Is this unit turned on or off? 0 = off, 1 = on
 Zone_available = [1,1,1] #Is this unit available or resting?  0 = no, 1 = yes
 Zone_Wait = 60 # dwell time between run time
-Temp_dwell = 60 #time between measurements 
+Temp_dwell = 6 #time between measurements 
 
 #Plot data live
 #plt.ion()
@@ -138,7 +138,7 @@ def hvac(sensor,i):
         GPIO.output(Relay[i], GPIO.LOW)
         Zone_Status[i] = 0
         Zone_Off_Time[i] = time.monotonic()
-        #Zone_Switch[i] = 0  #make the unit unavailable 
+        #Zone_Switch[i] = 0  #make the unit unavailable                                                      
         print("Heat Turned off for", Zone_Name[i],"for being greater than run time desired at",Zone_Off_Time[i])
         #print (time.ctime())
 
@@ -149,14 +149,15 @@ def hvac(sensor,i):
 # Function for creating the CSV file 
 #def CreateCSV():
     # Create CSV to log ThermoPi Data
-    header = ['Time',"Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status"]
-    file = "ThermoPi"
-    csvtime = time.ctime()
-    csvmonth = str(csvtime[-4:])
+header = ['Time',"Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status"]
+file = "ThermoPi"
+csvtime = time.ctime()
+csvmonth = str(csvtime[4:7])    
+csvyear = str(csvtime[-4:])
     #print(month[4:7])
-    with open(str(file) + str(csvtime[4:7]) + str(csvtime[-4:]) + ".csv", "w") as log: 
-        writer = csv.writer(log)
-        writer.writerow(header)
+with open(str(file) + str(csvtime[4:7]) + str(csvtime[-4:]) + ".csv", "w") as log: 
+    writer = csv.writer(log)
+    writer.writerow(header)
 
 # with open("/home/pi/ThermoPi/ThermoPi2022.csv","w") as log:
 #     writer = csv.writer(log)
@@ -240,8 +241,9 @@ def hvac(sensor,i):
             print(output)
 
         #Create new CSV file if month change
-        #time_str = time.ctime()
-        #if csvmonth != time_str[-4:]:
+        # time_str = time.ctime()
+        # if csvmonth != time_str[4:7]:
+        #     print("toast")
             #CreateCSV()
         
         #Dwell between measurements
