@@ -152,17 +152,11 @@ def hvac(sensor,i):
 header = ['Time',"Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status"]
 file = "ThermoPi"
 csvtime = time.ctime()
-csvmonth = str(csvtime[4:7])    
-csvyear = str(csvtime[-4:])
-    #print(month[4:7])
+csvmonth = str(csvtime[4:7])
 with open(str(file) + str(csvtime[4:7]) + str(csvtime[-4:]) + ".csv", "w") as log: 
     writer = csv.writer(log)
     writer.writerow(header)
-
-# with open("/home/pi/ThermoPi/ThermoPi2022.csv","w") as log:
-#     writer = csv.writer(log)
-#     writer.writerow(header)
-
+    
 ####################### The Loop  ################################
     while True:
         # Read temps from sensors and turn on heat if needed and wanted 
@@ -241,11 +235,18 @@ with open(str(file) + str(csvtime[4:7]) + str(csvtime[-4:]) + ".csv", "w") as lo
             print(output)
 
         #Create new CSV file if month change
-        # time_str = time.ctime()
-        # if csvmonth != time_str[4:7]:
-        #     print("toast")
-            #CreateCSV()
-        
+        time_str = time.ctime()
+        if csvmonth != time_str[4:7]:
+            print("month change")
+            log.close()
+            header = ['Time',"Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status"]
+            file = "ThermoPi"
+            csvtime = time.ctime()
+            csvmonth = str(csvtime[4:7])
+            with open(str(file) + str(csvtime[4:7]) + str(csvtime[-4:]) + ".csv", "w") as log: 
+                writer = csv.writer(log)
+                writer.writerow(header)
+                    
         #Dwell between measurements
         time.sleep(Temp_dwell)
 
