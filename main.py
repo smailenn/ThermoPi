@@ -75,6 +75,7 @@ Zone_Name = ["Master Bedroom", "Main Floor", "Upper Floor"]
 Zone_temp = [ 68, 68, 68] #zone temps
 Zone_high = [73, 73, 74]  #MAX temperature of zone
 Zone_low = [68, 69, 70]  #MIN temperature of zone
+Zone_temp_away = [63, 63, 63] #Temperature when away 
 Zone_time = [300, 300, 300] #seconds of time zone will run
 Zone_Status = [0, 0, 0] #Status of heating, 0 = not on, 1 = already on
 Zone_On_Time = [0,0,0]  # What time did the zone turn on?
@@ -83,6 +84,9 @@ Zone_Switch = [1, 1, 1] # Is this unit turned on or off? 0 = off, 1 = on
 Zone_available = [1,1,1] #Is this unit available or resting?  0 = no, 1 = yes
 Zone_Wait = 60 # dwell time between run time
 Temp_dwell = 6 #time between measurements 
+Vacation = 0 #Are you on Vacation?  0 = no, 1 = Yes
+Vacation_temp = [62,62,62]  #temperature when away for long period
+Zone_Eco_time_weekday = [0,6,9,4,10]
 
 #Plot data live
 #plt.ion()
@@ -146,9 +150,8 @@ def hvac(sensor,i):
     if (time.monotonic() - Zone_Off_Time[i]) >= Zone_Wait:
         Zone_available[i] = 1
 
-# Function for creating the CSV file 
-#def CreateCSV():
-    # Create CSV to log ThermoPi Data
+# Function for creating starting CSV file 
+# Create CSV to log ThermoPi Data
 header = ['Time',"Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status"]
 file = "ThermoPi"
 csvtime = time.ctime()
@@ -239,8 +242,6 @@ with open(str(file) + str(csvtime[4:7]) + str(csvtime[-4:]) + ".csv", "w") as lo
         if csvmonth != time_str[4:7]:
             print("month change")
             log.close()
-            header = ['Time',"Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status","Zone Name","Zone Temp (f)","Status"]
-            file = "ThermoPi"
             csvtime = time.ctime()
             csvmonth = str(csvtime[4:7])
             with open(str(file) + str(csvtime[4:7]) + str(csvtime[-4:]) + ".csv", "w") as log: 
